@@ -93,11 +93,17 @@ export default function LiveSimulation({ caseData, onComplete }: LiveSimulationP
 
   const getPatientResponse = async (doctorMessage: string): Promise<any> => {
     const lowerMessage = doctorMessage.toLowerCase()
-    const result = await generateGeminiResponse(doctorMessage);
+    const messagesText = messages
+  .map(m => `[${m.role}] ${m.content} (${m.timestamp.toLocaleString()})`)
+  .join("\n");
+console.log(messagesText);
+    
+    const result = await generateGeminiResponse(doctorMessage, messagesText);
+    console.log(result.text);
     const patientAudio = await getAudioFromText(result.text);
     const audio = new Audio(patientAudio);
     audio.play();
-    // console.log(result);
+    
     return result;
   }
 
@@ -206,7 +212,7 @@ export default function LiveSimulation({ caseData, onComplete }: LiveSimulationP
       };
       setMessages((prev) => [...prev, patientMessage]);
       setIsLoading(false);
-    }, 800);
+    }, 10);
 
     stream.getTracks().forEach((track) => track.stop());
   };

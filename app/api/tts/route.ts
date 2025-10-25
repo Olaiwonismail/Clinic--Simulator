@@ -1,11 +1,36 @@
 import { NextResponse } from "next/server";
-import wav from "wav";
 import { Writable } from "stream";
+import wav from "wav";
+
+// Fallback: pre-recorded "TTS unavailable" audio in base64 (1–2 seconds)
+const FALLBACK_WAV_BASE64 = 
+  "UklGRjQAAABXQVZFZm10IBAAAAABAAEAQB8AAIA+AAACABAAZGF0YQAAAAA="; 
+// (This is just a tiny silent WAV placeholder; replace with actual message if needed)
+
+async function pcmToWavBuffer(pcmBuffer: Buffer, sampleRate = 24000) {
+  const chunks: Buffer[] = [];
+  const writer = new wav.Writer({
+    channels: 1,
+    sampleRate,
+    bitDepth: 16,
+  });
+  const writable = new Writable({
+    write(chunk, _encoding, next) {
+      chunks.push(chunk);
+      next();
+    },
+  });
+  writer.pipe(writable);
+  writer.write(pcmBuffer);
+  writer.end();
+
+  await new Promise((resolve) => writable.on("finish", resolve));
+  return Buffer.concat(chunks);
+}
 
 export async function POST(req: Request) {
   try {
     const { text } = await req.json();
-
     if (!text) return NextResponse.json({ error: "Missing text" }, { status: 400 });
 
     const res = await fetch(
@@ -20,9 +45,7 @@ export async function POST(req: Request) {
           contents: [{ parts: [{ text }] }],
           generationConfig: {
             responseModalities: ["AUDIO"],
-            speechConfig: {
-              voiceConfig: { prebuiltVoiceConfig: { voiceName: "Kore" } },
-            },
+            speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: "Kore" } } },
           },
           model: "gemini-2.5-flash-preview-tts",
         }),
@@ -30,36 +53,23 @@ export async function POST(req: Request) {
     );
 
     const data = await res.json();
-    const base64Audio = data?.candidates?.[0]?.content?.parts?.[0]?.inlineData?.data;
-    if (!base64Audio) throw new Error("No audio data");
+    console.log("TTS response:", data);
 
-    const pcmBuffer = Buffer.from(base64Audio, "base64");
+    const base64PCM = data?.candidates?.[0]?.content?.parts?.[0]?.inlineData?.data;
 
-    // Convert PCM to WAV using 'wav' writer
-    const chunks: Buffer[] = [];
-    const writer = new wav.Writer({
-      channels: 1,
-      sampleRate: 24000,
-      bitDepth: 16,
-    });
-    const writable = new Writable({
-      write(chunk, _enc, next) {
-        chunks.push(chunk);
-        next();
-      },
-    });
-    writer.pipe(writable);
-    writer.write(pcmBuffer);
-    writer.end();
+    let wavBuffer: Buffer;
+    if (base64PCM) {
+      const pcmBuffer = Buffer.from(base64PCM, "base64");
+      wavBuffer = await pcmToWavBuffer(pcmBuffer);
+    } else {
+      console.warn("TTS failed, using fallback audio");
+      wavBuffer = Buffer.from(FALLBACK_WAV_BASE64, "base64");
+    }
 
-    await new Promise((r) => writable.on("finish", r));
-    const wavBuffer = Buffer.concat(chunks);
-
-    return new NextResponse(wavBuffer, {
-      headers: { "Content-Type": "audio/wav" },
-    });
+    return new NextResponse(wavBuffer, { headers: { "Content-Type": "audio/wav" } });
   } catch (err) {
     console.error("TTS error:", err);
-    return NextResponse.json({ error: "Failed to generate audio" }, { status: 500 });
+    const fallbackBuffer = Buffer.from(FALLBACK_WAV_BASE64, "base64");
+    return new NextResponse(fallbackBuffer, { headers: { "Content-Type": "audio/wav" } });
   }
 }
