@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Send, Clock, User, X, Mic, Volume2 } from "lucide-react"
+import { generateGeminiFeedback } from "@/lib/geminiFeedback";
 
 import { generateGeminiResponse } from "@/lib/geminiClient";
 interface LiveSimulationProps {
@@ -237,13 +238,12 @@ export default function LiveSimulation({ caseData, onComplete }: LiveSimulationP
   //   }
   // }
 
-  const handleEndSession = () => {
-    onComplete({
-      caseId: caseData.id,
-      messages,
-      timeUsed: 900 - timeLeft,
-      score: 78,
-    })
+  const handleEndSession = async () => {
+    const allMessagesText = messages
+  .map(m => `[${m.role}] ${m.content} (${m.timestamp.toLocaleString()})`)
+  .join("\n");
+    const endData = await generateGeminiFeedback( allMessagesText, caseData);
+    onComplete(endData)
   }
 
   const handlePlayAudio = async (message: Message) => {
