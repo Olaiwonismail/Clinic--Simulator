@@ -229,17 +229,7 @@ export default function CaseSelection({ onSelectCase }: CaseSelectionProps) {
               <h2 className="text-2xl font-bold text-foreground mb-6">{editingCase ? "Edit Case" : "Add New Case"}</h2>
 
               <div className="space-y-4">
-                {/* Reference field - shown only in add/edit */}
-                <div>
-                  <label className="text-sm font-semibold text-foreground block mb-1">Reference</label>
-                  <input
-                    type="text"
-                    placeholder="e.g., CHEST-001"
-                    value={formData.reference}
-                    onChange={(e) => setFormData({ ...formData, reference: e.target.value })}
-                    className="w-full px-3 py-2 border border-border rounded-lg text-sm bg-input focus:outline-none focus:ring-2 focus:ring-primary"
-                  />
-                </div>
+                
 
                 <div>
                   <label className="text-sm font-semibold text-foreground block mb-1">Case Title</label>
@@ -267,7 +257,7 @@ export default function CaseSelection({ onSelectCase }: CaseSelectionProps) {
                   <div>
                     <label className="text-sm font-semibold text-foreground block mb-1">Age</label>
                     <input
-                      type="number"
+                      type="text"
                       placeholder="e.g., 58"
                       value={formData.age}
                       onChange={(e) => setFormData({ ...formData, age: e.target.value })}
@@ -320,6 +310,18 @@ export default function CaseSelection({ onSelectCase }: CaseSelectionProps) {
                     value={formData.description}
                     onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                     className="w-full px-3 py-2 border border-border rounded-lg text-sm h-20 resize-none bg-input focus:outline-none focus:ring-2 focus:ring-primary"
+                  />
+                </div>
+
+        {/* Reference field - shown only in add/edit */}
+                <div>
+                  <label className="text-sm font-semibold text-foreground block mb-1">Reference</label>
+                  <textarea
+                    // type="multi text"
+                    placeholder="e.g., CHEST-001"
+                    value={formData.reference}
+                    onChange={(e) => setFormData({ ...formData, reference: e.target.value })}
+                    className="w-full px-3 py-2 border border-border rounded-lg text-sm bg-input focus:outline-none focus:ring-2 focus:ring-primary"
                   />
                 </div>
 

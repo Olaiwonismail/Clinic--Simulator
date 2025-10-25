@@ -50,13 +50,7 @@ export default function LiveSimulation({ caseData, onComplete }: LiveSimulationP
     
 
   const [messages, setMessages] = useState<Message[]>([
-    {
-      id: "1",
-      role: "patient",
-      content: `Hello Doctor, I'm ${caseData.patient}. I'm not feeling well today.`,
-      timestamp: new Date(),
-      audioUrl: "#",
-    },
+   
   ])
   const [input, setInput] = useState("")
   const [timeLeft, setTimeLeft] = useState(900)
