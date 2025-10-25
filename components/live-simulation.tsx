@@ -90,9 +90,9 @@ export default function LiveSimulation({ caseData, onComplete }: LiveSimulationP
     const messagesText = messages
   .map(m => `[${m.role}] ${m.content} (${m.timestamp.toLocaleString()})`)
   .join("\n");
-console.log(messagesText);
+// console.log(messagesText);
     
-    const result = await generateGeminiResponse(doctorMessage, messagesText);
+    const result = await generateGeminiResponse(doctorMessage, messagesText, caseData.reference);
     console.log(result.text);
     const patientAudio = await getAudioFromText(result.text);
     const audio = new Audio(patientAudio);

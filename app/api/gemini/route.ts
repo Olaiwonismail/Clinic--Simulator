@@ -184,7 +184,7 @@ Do NOT include any extra text, markdown, code fences, logs, or explanations — 
 
 export async function POST(request: Request) {
   try {
-    const { text, history } = await request.json();
+    const { text, history, reference } = await request.json();
     console.log("Received text:", text);
     if (!text) {
       return NextResponse.json({ error: "Missing 'text' field" }, { status: 400 });
@@ -207,7 +207,7 @@ export async function POST(request: Request) {
           contents: [
             {
               parts: [{ 
-                text: `${caseData}${prompt}${history}${text}`
+                text: `${reference}${prompt}${history}${text}`
              }],
             },
           ],

@@ -1,9 +1,10 @@
-export async function generateGeminiResponse(prompt: string,messages:any) {
+export async function generateGeminiResponse(prompt: string,messages:any,reference:string) {
+  reference = 'caseData = '+reference
   try {
     const res = await fetch("/api/gemini", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ text: prompt, history: messages }),
+      body: JSON.stringify({ text: prompt, history: messages, reference: reference }),
     });
 
     if (!res.ok) {
